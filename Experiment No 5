@@ -1,0 +1,84 @@
+import java.util.Scanner;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+public class ReaderWriter {
+
+    private static final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock(); // multiple readers, one writer
+    private static final Object printLock = new Object(); // to avoid jumbled console output
+
+    static class Reader extends Thread {
+        private final int id;
+
+        Reader(int id) {
+            this.id = id;
+        }
+
+        @Override
+        public void run() {
+            while (true) {
+                rwLock.readLock().lock(); // reader acquires read lock
+                try {
+                    synchronized (printLock) {
+                        System.out.println("📖 Reader " + id + " is reading.");
+                    }
+                } finally {
+                    rwLock.readLock().unlock(); // reader releases read lock
+                }
+
+                try {
+                    Thread.sleep(1000); // simulate reading
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    static class Writer extends Thread {
+        private final int id;
+
+        Writer(int id) {
+            this.id = id;
+        }
+
+        @Override
+        public void run() {
+            while (true) {
+                rwLock.writeLock().lock(); // writer acquires write lock
+                try {
+                    synchronized (printLock) {
+                        System.out.println("✍️  Writer " + id + " is writing.");
+                    }
+                } finally {
+                    rwLock.writeLock().unlock(); // writer releases write lock
+                }
+
+                try {
+                    Thread.sleep(2000); // simulate writing
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Enter number of readers: ");
+        int numReaders = scanner.nextInt();
+
+        System.out.print("Enter number of writers: ");
+        int numWriters = scanner.nextInt();
+
+        for (int i = 1; i <= numReaders; i++) {
+            new Reader(i).start();
+        }
+
+        for (int i = 1; i <= numWriters; i++) {
+            new Writer(i).start();
+        }
+
+        scanner.close();
+    }
+}
