@@ -1,0 +1,80 @@
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.Random;
+
+public class DiningPhilosophers {
+    private static final int N = 5;
+    private static final ReentrantLock[] chopsticks = new ReentrantLock[N];
+    private static final ReentrantLock criticalSection = new ReentrantLock(); // to avoid deadlock
+
+    public static void main(String[] args) {
+        Thread[] philosophers = new Thread[N];
+
+        for (int i = 0; i < N; i++) {
+            chopsticks[i] = new ReentrantLock();
+        }
+
+        for (int i = 0; i < N; i++) {
+            int id = i;
+            philosophers[i] = new Thread(new Philosopher(id));
+            philosophers[i].start();
+        }
+
+        // Optional: join threads (not needed here since they run forever)
+        for (int i = 0; i < N; i++) {
+            try {
+                philosophers[i].join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    static class Philosopher implements Runnable {
+        private final int id;
+        private final Random rand = new Random();
+
+        Philosopher(int id) {
+            this.id = id;
+        }
+
+        @Override
+        public void run() {
+            int left = id;
+            int right = (id + 1) % N;
+
+            while (true) {
+                try {
+                    // Thinking
+                    System.out.println("🧠 Philosopher " + (id + 1) + " is thinking.");
+                    Thread.sleep(rand.nextInt(3000) + 1000);
+
+                    // Try entering critical section to avoid deadlock
+                    criticalSection.lock();
+                    try {
+                        if (chopsticks[left].tryLock()) {
+                            if (chopsticks[right].tryLock()) {
+                                // Got both chopsticks
+                                System.out.println("🍴 Philosopher " + (id + 1) + " picks up chopsticks " + (left + 1) + " & " + (right + 1));
+                                System.out.println("🍝 Philosopher " + (id + 1) + " is eating.");
+                                Thread.sleep(rand.nextInt(3000) + 1000);
+                                chopsticks[right].unlock();
+                                chopsticks[left].unlock();
+                                System.out.println("🪵 Philosopher " + (id + 1) + " puts down chopsticks " + (left + 1) + " & " + (right + 1));
+                            } else {
+                                chopsticks[left].unlock(); // release left if right not acquired
+                                System.out.println("⏳ Philosopher " + (id + 1) + " couldn't get both chopsticks. Waiting...");
+                            }
+                        } else {
+                            System.out.println("⏳ Philosopher " + (id + 1) + " couldn't get both chopsticks. Waiting...");
+                        }
+                    } finally {
+                        criticalSection.unlock(); // release critical section in all cases
+                    }
+
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+}
