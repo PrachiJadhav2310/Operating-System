@@ -1,0 +1,52 @@
+import java.util.LinkedList;
+import java.util.Queue;
+
+public class Prod_Consumer {
+    private static final int BUFFER_SIZE = 5;
+    private static final Queue<Integer> buffer = new LinkedList<>();
+    private static final Object lock = new Object();
+
+    public static void main(String[] args) {
+        Thread producer = new Thread(() -> {
+            while (true) {
+                try {
+                    int item = (int) (Math.random() * 100);
+                    synchronized (lock) {
+                        while (buffer.size() == BUFFER_SIZE) {
+                            lock.wait(); // Wait if buffer is full
+                        }
+                        buffer.add(item);
+                        System.out.println("🥤 Producer produced: " + item + " | Buffer size: " +
+                                buffer.size());
+                        lock.notify(); // Notify consumer to wake up the consumer if its waiting
+                    }
+                    Thread.sleep(1000); // Simulate production time
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        Thread consumer = new Thread(() -> {
+            while (true) {
+                try {
+                    synchronized (lock) {
+                        while (buffer.isEmpty()) {
+                            lock.wait(); // Wait if buffer is empty
+                        }
+                        int item = buffer.poll();
+                        System.out.println("🍔 Consumer consumed: " + item + " | Buffer size: " +
+                                buffer.size());
+                        lock.notify(); // Notify producer
+                    }
+                    Thread.sleep(1000); // Simulate consumption time
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        producer.start();
+        consumer.start();
+    }
+}
