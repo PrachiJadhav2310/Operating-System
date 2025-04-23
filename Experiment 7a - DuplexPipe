@@ -1,0 +1,67 @@
+import java.io.*;
+
+public class FullDuplexPipe {
+    public static void main(String[] args) throws IOException {
+        // Create pipes
+        PipedOutputStream parentToChildOut = new PipedOutputStream();
+        PipedInputStream parentToChildIn = new PipedInputStream(parentToChildOut);
+
+        PipedOutputStream childToParentOut = new PipedOutputStream();
+        PipedInputStream childToParentIn = new PipedInputStream(childToParentOut);
+
+        // Start child process as a thread
+        Thread child = new Thread(() -> {
+            try {
+                BufferedReader childReader = new BufferedReader(new InputStreamReader(parentToChildIn));
+                String fileName = childReader.readLine();
+
+                File file = new File(fileName);
+                BufferedWriter childWriter = new BufferedWriter(new OutputStreamWriter(childToParentOut));
+
+                if (!file.exists()) {
+                    childWriter.write("❌ File not found: " + fileName);
+                    childWriter.newLine();
+                } else {
+                    BufferedReader fileReader = new BufferedReader(new FileReader(file));
+                    String line;
+                    while ((line = fileReader.readLine()) != null) {
+                        childWriter.write(line);
+                        childWriter.newLine();
+                    }
+                    fileReader.close();
+                }
+
+                childWriter.flush();
+                childWriter.close();
+                childReader.close();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+
+        child.start();
+
+        // Parent process logic
+        BufferedWriter parentWriter = new BufferedWriter(new OutputStreamWriter(parentToChildOut));
+        BufferedReader parentReader = new BufferedReader(new InputStreamReader(childToParentIn));
+        BufferedReader inputReader = new BufferedReader(new InputStreamReader(System.in));
+
+        System.out.print("📁 Enter filename: ");
+        String filename = inputReader.readLine();
+
+        parentWriter.write(filename);
+        parentWriter.newLine();
+        parentWriter.flush();
+        parentWriter.close();
+
+        // Output received from child
+        System.out.println("\n📄 --- File Content ---");
+        String line;
+        while ((line = parentReader.readLine()) != null) {
+            System.out.println(line);
+        }
+
+        parentReader.close();
+    }
+}
