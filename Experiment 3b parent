@@ -1,0 +1,128 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX 20
+
+int binary_search(int a[MAX], int f, int l, int s); // Prototype
+
+int main(int argc, char *argv[]) {
+    int i, s, f;
+    int a[MAX];
+
+    for (i = 1; i < argc; i++)  // Convert string to integer array
+        a[i - 1] = atoi(argv[i]);
+
+    printf("\n\tThe sorted array is:\n");
+    for (i = 0; i < argc - 1; i++)
+        printf("\t%d", a[i]);
+
+    printf("\n\n\tEnter the element you want to search: ");
+    scanf("%d", &s);
+
+    f = binary_search(a, 0, argc - 2, s);
+
+    if (f != -1)
+        printf("\n\tThe element %d Found at %d location..!!!!\n\n", s, f + 1);
+    else
+        printf("\n\tThe element %d is not present in the list..!!!!\n\n", s);
+
+    return 0;
+}
+
+// Binary Search Function
+int binary_search(int a[MAX], int f, int l, int s) {
+    int mid;
+    while (f <= l) {
+        mid = (f + l) / 2;
+        if (s == a[mid])
+            return mid;
+        else if (s < a[mid])
+            l = mid - 1;
+        else
+            f = mid + 1;
+    }
+    return -1;
+}
+
+
+prach@DESKTOP-4TVBMA4:~$ nano parent.c
+prach@DESKTOP-4TVBMA4:~$ cat parent.c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#define MAX 20
+
+void quicksort(int a[MAX], int, int); // Quicksort prototype
+
+int main() {
+    int a[MAX], n, i;
+    char str[5];
+    char *str1[MAX];
+    pid_t pid;
+
+    printf("\n\tEnter the number of elements: ");
+    scanf("%d", &n);
+
+    printf("\n\tEnter the %d elements:\n", n);
+    for (i = 0; i < n; i++) {
+        printf("\t");
+        scanf("%d", &a[i]);
+    }
+
+    pid = fork(); // Create child process
+
+    if (pid < 0) {
+        printf("Error while creating new process...!!!!\n");
+    }
+    else if (pid > 0) { // Parent Process
+        quicksort(a, 0, n - 1); // Sort array
+
+        for (i = 0; i < MAX; i++)
+            str1[i] = NULL; // Terminate array with NULL
+
+        for (i = 0; i < n; i++) {
+            sprintf(str, "%d", a[i]);
+            str1[i] = strdup(str); // Convert integers to strings
+        }
+
+        execve("./child", str1, NULL); // Replace current process
+        perror("execve failed"); // If execve fails
+    }
+    else {
+        // Child process does nothing here; will be replaced by execve
+    }
+
+    return 0;
+}
+
+// Quicksort function
+void quicksort(int a[MAX], int f, int l) {
+    int i, j, pivot, temp;
+
+    if (f < l) {
+        i = f;
+        j = l;
+        pivot = f;
+
+        while (i < j) {
+            while (a[i] <= a[pivot] && i < l)
+                i++;
+            while (a[j] > a[pivot])
+                j--;
+            if (i < j) {
+                temp = a[i];
+                a[i] = a[j];
+                a[j] = temp;
+            }
+        }
+
+        temp = a[pivot];
+        a[pivot] = a[j];
+        a[j] = temp;
+
+        quicksort(a, f, j - 1);
+        quicksort(a, j + 1, l);
+    }
+}
