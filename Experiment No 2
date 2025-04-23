@@ -1,0 +1,72 @@
+#!/bin/bash
+echo "OSL PRACTICAL 1"
+echo "Library Database"
+echo "Enter file name"
+read f1
+ch=0
+while [ $ch -ne 7 ]
+do
+echo "MENU OF THE LIBRARY Database"
+echo "1. Add Record"
+echo "2. Display Record"
+echo "3. Search Record"
+echo "4. Delete Record"
+echo "5. Modify Record"
+echo "6. Exit"
+echo "Enter your choice"
+read ch
+case $ch in
+1) echo "Enter Book no"
+read rno
+echo "Enter name"
+read name
+echo "Enter author name"
+   read add
+   echo "$rno" "$name"  "$add" >> $f1
+   ;;
+
+2) echo "Entered record is as follows"
+   cat $f1
+   ;;
+
+3) echo "Enter Book no of record to be searched"
+   read rn1
+   if grep -e "$rn1" "$f1"
+   then
+   echo "Record found"
+   else
+   echo "Record not found"
+   fi
+   ;;
+
+4)echo "Enter Book no of the record to be deleted"
+  read rn1
+  grep -v "$rn1" "$f1" | cat > nf1
+  echo "Library Database after record deletion is "
+  cp nf1 $f1
+  cat $f1
+  ;;
+
+5) echo "Enter Book no of record to be modified"
+   read rn1
+   if grep -v "$rn1" "$f1"| cat > nf1
+ then
+   cp nf1 $f1
+   echo "Enter new Book no"
+   read nrno
+   echo "Enter new book name"
+   read nname
+   echo "Enter new author name"
+   read nadd
+   echo "$nrno" "$nname" "$nadd"   >> $f1
+   else
+   echo "Record not found"
+   fi
+   ;;
+
+6) exit
+   ;;
+
+*) echo "Invalid choice"
+esac
+done
