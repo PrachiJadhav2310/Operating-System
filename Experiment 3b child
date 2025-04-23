@@ -1,0 +1,45 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX 20
+
+int binary_search(int a[MAX], int f, int l, int s); // Prototype
+
+int main(int argc, char *argv[]) {
+    int i, s, f;
+    int a[MAX];
+
+    for (i = 1; i < argc; i++)  // Convert string to integer array
+        a[i - 1] = atoi(argv[i]);
+
+    printf("\n\tThe sorted array is:\n");
+    for (i = 0; i < argc - 1; i++)
+        printf("\t%d", a[i]);
+
+    printf("\n\n\tEnter the element you want to search: ");
+    scanf("%d", &s);
+
+    f = binary_search(a, 0, argc - 2, s);
+
+    if (f != -1)
+        printf("\n\tThe element %d Found at %d location..!!!!\n\n", s, f + 1);
+    else
+        printf("\n\tThe element %d is not present in the list..!!!!\n\n", s);
+
+    return 0;
+}
+
+// Binary Search Function
+int binary_search(int a[MAX], int f, int l, int s) {
+    int mid;
+    while (f <= l) {
+        mid = (f + l) / 2;
+        if (s == a[mid])
+            return mid;
+        else if (s < a[mid])
+            l = mid - 1;
+        else
+            f = mid + 1;
+    }
+    return -1;
+}
