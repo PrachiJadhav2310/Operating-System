@@ -1,0 +1,35 @@
+import java.io.*;
+
+public class process1 {
+    public static void main(String[] args) {
+        String fifo1 = "fifo1";
+        String fifo2 = "fifo2";
+
+        try {
+            // Accept sentence from user
+            BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
+            System.out.print("📝 Enter a sentence: ");
+            String sentence = input.readLine();
+
+            // Send sentence to process2 via fifo1
+            BufferedWriter writer = new BufferedWriter(new FileWriter(fifo1));
+            writer.write(sentence);
+            writer.newLine();
+            writer.flush();
+            writer.close();
+
+            // Wait and read analysis from fifo2
+            BufferedReader resultReader = new BufferedReader(new FileReader(fifo2));
+            System.out.println("\n📄 --- Analysis Result from Process 2 ---");
+
+            String line;
+            while ((line = resultReader.readLine()) != null) {
+                System.out.println(line);
+            }
+            resultReader.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
