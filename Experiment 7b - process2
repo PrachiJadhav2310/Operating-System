@@ -1,0 +1,36 @@
+import java.io.*;
+import java.util.StringTokenizer;
+
+public class process2 {
+    public static void main(String[] args) {
+        String fifo1 = "fifo1";
+        String fifo2 = "fifo2";
+
+        try {
+            // Read sentence from fifo1
+            BufferedReader reader = new BufferedReader(new FileReader(fifo1));
+            String sentence = reader.readLine();
+            reader.close();
+
+            // Analyze the sentence
+            int chars = sentence.length();
+            int words = new StringTokenizer(sentence).countTokens();
+            int lines = sentence.split("\n").length;
+
+            String result = "Characters: " + chars + "\n" +
+                            "Words: " + words + "\n" +
+                            "Lines: " + lines;
+
+            // Write result to fifo2
+            BufferedWriter writer = new BufferedWriter(new FileWriter(fifo2));
+            writer.write(result);
+            writer.newLine();
+            writer.flush();
+            writer.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+
